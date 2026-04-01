@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "allowJs": false,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "verbatimModuleSyntax": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "baseUrl": ".",
+    "paths": {
+      "@turner/shared": ["packages/shared/src/index.ts"],
+      "@turner/contracts": ["packages/contracts/src/index.ts"],
+      "@turner/domain": ["packages/domain/src/index.ts"],
+      "@turner/media-engine": ["packages/media-engine/src/index.ts"],
+      "@turner/persistence": ["packages/persistence/src/index.ts"],
+      "@turner/observability": ["packages/observability/src/index.ts"]
+    }
+  }
+}

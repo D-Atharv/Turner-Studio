@@ -1,0 +1,42 @@
+/* ═══════════════════════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════════════════════ */
+
+@keyframes appReveal {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.998);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes panelFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes progressPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.75; }
+}
+
+/* ─── Entry animation utility ─────────────────────────── */
+
+.panel-fade-in {
+  animation: panelFadeIn 240ms var(--ease-out) both;
+}
+
+/* ─── Active progress shimmer (only while converting) ─── */
+
+.active-job.status-converting .active-progress {
+  animation: progressPulse 2.4s ease-in-out infinite;
+}

@@ -1,0 +1,25 @@
+{
+  "name": "@turner/desktop",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/main/index.js",
+  "scripts": {
+    "dev": "wait-on tcp:5173 && npm run build && cross-env TURNER_RENDERER_URL=http://127.0.0.1:5173 electron dist/main/index.js",
+    "build": "tsc -p tsconfig.json && node -e \"const fs=require('fs');fs.mkdirSync('dist/preload',{recursive:true});fs.copyFileSync('src/preload/bridge.cjs','dist/preload/bridge.cjs')\"",
+    "start": "electron dist/main/index.js"
+  },
+  "dependencies": {
+    "@turner/contracts": "file:../../packages/contracts",
+    "@turner/domain": "file:../../packages/domain",
+    "@turner/media-engine": "file:../../packages/media-engine",
+    "@turner/observability": "file:../../packages/observability",
+    "@turner/persistence": "file:../../packages/persistence",
+    "@turner/shared": "file:../../packages/shared",
+    "electron": "^37.5.0"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "wait-on": "^8.0.3"
+  }
+}

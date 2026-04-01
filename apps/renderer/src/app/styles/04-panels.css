@@ -1,0 +1,253 @@
+/* ═══════════════════════════════════════════════════════
+   ACTIVE PROCESS PANEL
+═══════════════════════════════════════════════════════ */
+
+.empty-inline {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.875rem;
+}
+
+/* Left-accent container for the running job */
+
+.active-job {
+  margin-top: 0.6rem;
+  position: relative;
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line-soft);
+  border-left: 3px solid var(--primary);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+/* Status variants */
+
+.active-job.status-done        { border-left-color: var(--ok); }
+.active-job.status-failed      { border-left-color: var(--error); }
+.active-job.status-cancelled   { border-left-color: var(--outline); }
+
+/* Job header row */
+
+.active-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.active-file-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.active-file-info strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.active-file-meta {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  font-family: var(--font-label);
+  letter-spacing: 0.02em;
+}
+
+/* Status badge */
+
+.active-status-badge {
+  flex-shrink: 0;
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  padding: 0.22rem 0.55rem;
+  border-radius: var(--radius-sm);
+  background: rgba(183, 196, 255, 0.12);
+  color: var(--primary);
+  font-family: var(--font-label);
+}
+
+.status-done    .active-status-badge { background: rgba(74, 222, 128, 0.12); color: var(--ok); }
+.status-failed  .active-status-badge { background: rgba(236, 124, 138, 0.12); color: var(--error); }
+.status-cancelled .active-status-badge { background: var(--surface-high); color: var(--text-dim); }
+.status-waiting .active-status-badge { background: var(--surface-high); color: var(--text-dim); }
+
+/* Progress bar */
+
+.active-progress-wrap {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-highest);
+  overflow: hidden;
+}
+
+.active-progress {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--primary-container));
+  border-radius: 999px;
+  transition: width 280ms var(--ease-out);
+  will-change: width;
+}
+
+.status-done .active-progress {
+  background: linear-gradient(90deg, #4ade80, #22c55e);
+}
+
+.status-failed .active-progress,
+.status-cancelled .active-progress {
+  background: linear-gradient(90deg, var(--error), #b95463);
+}
+
+/* Meta row: percent + ETA + speed + fps */
+
+.active-row-meta {
+  align-items: flex-start;
+}
+
+.active-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+}
+
+.active-meta small {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  font-family: var(--font-label);
+}
+
+/* Cancel / open / folder buttons */
+
+.active-actions {
+  flex-shrink: 0;
+  display: flex;
+  gap: 0.4rem;
+}
+
+.icon-button {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.32rem 0.65rem;
+  font-family: var(--font-label);
+  color: var(--text-dim);
+  background: var(--surface-high);
+  border-color: var(--line-soft);
+}
+
+.icon-button:hover {
+  color: var(--text);
+  background: var(--surface-bright);
+}
+
+/* Cancel button (danger) */
+
+.icon-button.cancel-btn {
+  color: var(--error);
+}
+
+.icon-button.cancel-btn:hover {
+  background: rgba(236, 124, 138, 0.1);
+  border-color: rgba(236, 124, 138, 0.35);
+}
+
+/* ── Progress header: "Progress: 64%" + "4.2x (126 FPS)" ── */
+
+.active-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.active-meta-pill {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  font-family: var(--font-label);
+}
+
+/* ── 3-column metrics grid: Elapsed | Remaining | Speed ── */
+
+.active-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border-top: 1px solid var(--line-soft);
+  padding-top: 0.75rem;
+  margin-top: 0.1rem;
+}
+
+.active-metric-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.active-metric-cell:not(:last-child) {
+  padding-right: 1rem;
+  border-right: 1px solid var(--line-soft);
+  margin-right: 1rem;
+}
+
+.active-metric-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+  font-family: var(--font-label);
+}
+
+.active-metric-value {
+  font-size: 0.92rem;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  color: var(--text);
+}
+
+/* Row end: badge + action buttons */
+
+.active-row-end {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Notification note */
+
+.job-note {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  letter-spacing: 0.01em;
+}
+
+/* Error message */
+
+.job-error {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--error);
+  padding: 0.5rem 0.65rem;
+  background: var(--error-bg);
+  border: 1px solid rgba(236, 124, 138, 0.3);
+  border-radius: var(--radius-sm);
+}

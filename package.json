@@ -1,0 +1,29 @@
+{
+  "name": "turner",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Turner desktop converter (.webm to .mp4)",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run build:packages && concurrently -k -n RENDERER,DESKTOP \"npm run dev:renderer\" \"npm run dev:desktop\"",
+    "dev:renderer": "npm --prefix apps/renderer run dev",
+    "dev:desktop": "npm --prefix apps/desktop run dev",
+    "build": "npm run build:packages && npm run build:renderer && npm run build:desktop",
+    "build:packages": "npm --prefix packages/shared run build && npm --prefix packages/contracts run build && npm --prefix packages/domain run build && npm --prefix packages/media-engine run build && npm --prefix packages/persistence run build && npm --prefix packages/observability run build",
+    "build:renderer": "npm --prefix apps/renderer run build",
+    "build:desktop": "npm --prefix apps/desktop run build",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "npm run typecheck"
+  },
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "concurrently": "^9.2.1",
+    "typescript": "^5.9.3",
+    "vitest": "^1.6.1"
+  }
+}

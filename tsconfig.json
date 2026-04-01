@@ -1,0 +1,25 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node", "vitest/globals"],
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["apps/renderer/src/*"],
+      "@turner/shared": ["packages/shared/src/index.ts"],
+      "@turner/contracts": ["packages/contracts/src/index.ts"],
+      "@turner/domain": ["packages/domain/src/index.ts"],
+      "@turner/media-engine": ["packages/media-engine/src/index.ts"],
+      "@turner/persistence": ["packages/persistence/src/index.ts"],
+      "@turner/observability": ["packages/observability/src/index.ts"]
+    }
+  },
+  "include": [
+    "apps/**/*.ts",
+    "apps/**/*.tsx",
+    "packages/**/*.ts",
+    "tests/**/*.ts"
+  ],
+  "exclude": ["dist", "out", "node_modules"]
+}

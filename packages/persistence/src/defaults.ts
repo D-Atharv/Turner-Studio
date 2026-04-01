@@ -1,0 +1,12 @@
+import { APP_SETTINGS_SCHEMA_VERSION, CONVERSION_DEFAULTS } from '@turner/shared';
+import type { AppSettings } from '@turner/contracts';
+
+export const DEFAULT_APP_SETTINGS: AppSettings = {
+  schemaVersion: APP_SETTINGS_SCHEMA_VERSION,
+  crf: CONVERSION_DEFAULTS.CRF,
+  preset: CONVERSION_DEFAULTS.PRESET,
+  audioBitrate: CONVERSION_DEFAULTS.AUDIO_BITRATE,
+  keepOriginal: CONVERSION_DEFAULTS.KEEP_ORIGINAL,
+  notifyOnCompletion: CONVERSION_DEFAULTS.NOTIFY_ON_COMPLETION,
+  timeoutMs: CONVERSION_DEFAULTS.CONVERSION_TIMEOUT_MS
+};
