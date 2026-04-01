@@ -5,9 +5,9 @@ import {
   createWaitingJob,
   resolveOutputPath,
   resolveConvertOptions,
-  validateWebmInputPath
+  validateVideoInputPath
 } from '@turner/domain';
-import { createAppError, err, ok, type Result } from '@turner/shared';
+import { createAppError, err, ok, getOutputExtension, type Result } from '@turner/shared';
 import { validateInputFile } from './queue-helpers.js';
 
 type PrepareJobsParams = {
@@ -37,7 +37,7 @@ export const prepareJobsForEnqueue = async ({
   const jobs: ConvertJob[] = [];
 
   for (const inputPathCandidate of normalizedInputPaths) {
-    const inputValidation = validateWebmInputPath(inputPathCandidate);
+    const inputValidation = validateVideoInputPath(inputPathCandidate);
     if (!inputValidation.ok) {
       return inputValidation;
     }
@@ -50,6 +50,7 @@ export const prepareJobsForEnqueue = async ({
     const outputPathResult = resolveOutputPath({
       inputPath: inputValidation.value,
       outputDir: optionsResult.value.outputDir,
+      outputExtension: getOutputExtension(optionsResult.value.profileId),
       exists: fsSync.existsSync
     });
 

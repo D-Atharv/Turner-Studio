@@ -1,4 +1,7 @@
+import type { ConversionProfileId } from '@turner/shared';
+import { getInputExtensions } from '@turner/shared';
 import type { UiJob } from '@/state/types';
+import { FormatSelector } from '@/features/conversion-profiles/FormatSelector';
 import { DropZone } from '@/features/jobs/DropZone';
 import { ActiveProcessPanel } from './ActiveProcessPanel';
 import { QueuePanel } from './QueuePanel';
@@ -13,14 +16,16 @@ type ConverterWorkspaceProps = {
   activeJob: UiJob | undefined;
   recentProcessed: UiJob[];
   notifyOnCompletion: boolean;
+  selectedProfileId: ConversionProfileId;
   onPathsSelected: (paths: string[]) => void;
   onBrowse: () => void;
   onDropError: (message: string) => void;
   onCancel: (jobId: string) => void;
   onOpenFile: (outputPath: string) => void;
   onShowInFolder: (outputPath: string) => void;
-  onRenameOutputFile: (outputPath: string) => void;
+  onRenameOutputFile: (outputPath: string, nextName: string) => void;
   onSetPreferredName: (jobId: string, name: string) => void;
+  onSelectProfile: (profileId: ConversionProfileId) => void;
 };
 
 export const ConverterWorkspace = ({
@@ -30,6 +35,7 @@ export const ConverterWorkspace = ({
   activeJob,
   recentProcessed,
   notifyOnCompletion,
+  selectedProfileId,
   onPathsSelected,
   onBrowse,
   onDropError,
@@ -37,13 +43,19 @@ export const ConverterWorkspace = ({
   onOpenFile,
   onShowInFolder,
   onRenameOutputFile,
-  onSetPreferredName
+  onSetPreferredName,
+  onSelectProfile
 }: ConverterWorkspaceProps) => {
+  // Derive accepted extensions from the selected profile so the drop zone
+  // and file picker only show/accept files of the correct input format.
+  const acceptedExtensions = getInputExtensions(selectedProfileId);
+
   return (
-    <>
+    <div className="converter-workspace">
       <section className="converter-grid">
         <DropZone
           disabled={disabled}
+          acceptedExtensions={acceptedExtensions}
           onPathsSelected={onPathsSelected}
           onBrowse={onBrowse}
           onError={onDropError}
@@ -51,8 +63,15 @@ export const ConverterWorkspace = ({
         <SessionStatsCard stats={sessionStats} onAddFiles={onBrowse} />
       </section>
 
+      <FormatSelector
+        selectedProfileId={selectedProfileId}
+        disabled={disabled}
+        onSelect={onSelectProfile}
+      />
+
       <ActiveProcessPanel
         job={activeJob}
+        profileId={selectedProfileId}
         notifyOnCompletion={notifyOnCompletion}
         onCancel={onCancel}
         onOpenFile={onOpenFile}
@@ -66,8 +85,11 @@ export const ConverterWorkspace = ({
           onShowInFolder={onShowInFolder}
           onRenameOutputFile={onRenameOutputFile}
         />
-        <QueuePanel jobs={jobs} onSetPreferredName={onSetPreferredName} />
+        <QueuePanel
+          jobs={jobs.filter((j) => j.status === 'waiting' || j.status === 'converting')}
+          onSetPreferredName={onSetPreferredName}
+        />
       </section>
-    </>
+    </div>
   );
 };

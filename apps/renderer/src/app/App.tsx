@@ -42,8 +42,10 @@ export const App = () => {
             onCancel={(jobId) => { void app.cancelJob(jobId); }}
             onOpenFile={(outputPath) => { void app.openFile(outputPath); }}
             onShowInFolder={(outputPath) => { void app.showInFolder(outputPath); }}
-            onRenameOutputFile={(outputPath) => { void app.renameOutputFile(outputPath); }}
+            onRenameOutputFile={(outputPath, nextName) => { void app.renameOutputFile(outputPath, nextName); }}
             onSetPreferredName={(jobId, name) => { void app.setPreferredOutputName(jobId, name); }}
+            selectedProfileId={app.selectedProfileId}
+            onSelectProfile={app.setConversionProfile}
             onSettingsSave={app.updateSettings}
             onPickOutputFolder={app.pickOutputFolder}
             onSettingsClose={() => app.handleSidebarNavigate('converter')}
@@ -54,8 +56,8 @@ export const App = () => {
       </section>
 
       <ToastList
-        error={app.state.appError}
-        onClear={() => app.setAppError(undefined)}
+        toasts={app.state.toasts}
+        onDismiss={app.dismissToast}
       />
     </main>
   );

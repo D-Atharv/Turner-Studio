@@ -1,4 +1,4 @@
-import type { Action, AppState, UiJob } from './types';
+import type { Action, AppState, AppToast, UiJob } from './types';
 
 const TERMINAL_STATUSES = new Set<UiJob['status']>(['done', 'failed', 'cancelled']);
 
@@ -21,15 +21,13 @@ export const reducer = (state: AppState, action: Action): AppState => {
       return {
         ...state,
         settings: action.payload,
-        loadingSettings: false,
-        appError: undefined
+        loadingSettings: false
       };
 
     case 'settingsUpdated':
       return {
         ...state,
-        settings: action.payload,
-        appError: undefined
+        settings: action.payload
       };
 
     case 'setSettingsOpen':
@@ -44,11 +42,22 @@ export const reducer = (state: AppState, action: Action): AppState => {
         isEnqueueing: action.payload
       };
 
-    case 'setAppError':
-      return {
-        ...state,
-        appError: action.payload
+    case 'setAppError': {
+      // Undefined payload (legacy "clear error" call) is a no-op in the queue model
+      if (!action.payload) return state;
+      const errToast: AppToast = {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        variant: 'error',
+        message: action.payload
       };
+      return { ...state, toasts: [...state.toasts, errToast] };
+    }
+
+    case 'pushToast':
+      return { ...state, toasts: [...state.toasts, action.payload] };
+
+    case 'dismissToast':
+      return { ...state, toasts: state.toasts.filter((t) => t.id !== action.payload) };
 
     case 'jobsQueued': {
       return action.payload.reduce((nextState, queued) => {
@@ -163,6 +172,9 @@ export const reducer = (state: AppState, action: Action): AppState => {
         }
       };
     }
+
+    case 'setConversionProfile':
+      return { ...state, selectedProfileId: action.payload };
 
     default:
       return state;

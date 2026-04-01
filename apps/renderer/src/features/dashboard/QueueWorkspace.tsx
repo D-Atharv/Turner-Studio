@@ -1,4 +1,6 @@
+import { useRef, useState } from 'react';
 import type { UiJob } from '@/state/types';
+import { fileNameFromPath } from '@/features/jobs/file-paths';
 import { formatPercent, shortName, statusLabel } from './formatters';
 import { PipelineTable } from './PipelineTable';
 import type { SessionStats } from './selectors';
@@ -12,7 +14,7 @@ type QueueWorkspaceProps = {
   onCancel: (jobId: string) => void;
   onOpenFile: (outputPath: string) => void;
   onShowInFolder: (outputPath: string) => void;
-  onRenameOutputFile: (outputPath: string) => void;
+  onRenameOutputFile: (outputPath: string, nextName: string) => void;
 };
 
 type StatCardProps = {
@@ -33,12 +35,33 @@ type ActiveCardProps = {
   onCancel: (jobId: string) => void;
   onOpenFile: (outputPath: string) => void;
   onShowInFolder: (outputPath: string) => void;
-  onRenameOutputFile: (outputPath: string) => void;
+  onRenameOutputFile: (outputPath: string, nextName: string) => void;
 };
 
 const ActiveCard = ({ job, onCancel, onOpenFile, onShowInFolder, onRenameOutputFile }: ActiveCardProps) => {
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [draft, setDraft]           = useState('');
+  const inputRef                    = useRef<HTMLInputElement>(null);
+
   const canCancel = job.status === 'waiting' || job.status === 'converting';
   const canOpen   = job.status === 'done' && Boolean(job.outputPath);
+
+  const startRename = () => {
+    if (!job.outputPath) return;
+    const name = fileNameFromPath(job.outputPath);
+    const dot = name.lastIndexOf('.');
+    setDraft(dot > 0 ? name.slice(0, dot) : name);
+    setIsRenaming(true);
+    setTimeout(() => inputRef.current?.select(), 0);
+  };
+
+  const commitRename = () => {
+    const trimmed = draft.trim();
+    if (trimmed && job.outputPath) onRenameOutputFile(job.outputPath, trimmed);
+    setIsRenaming(false);
+  };
+
+  const cancelRename = () => setIsRenaming(false);
 
   return (
     <article className={`active-job status-${job.status}`}>
@@ -55,29 +78,31 @@ const ActiveCard = ({ job, onCancel, onOpenFile, onShowInFolder, onRenameOutputF
               Cancel
             </button>
           ) : null}
-          {canOpen && job.outputPath ? (
+          {canOpen && job.outputPath && !isRenaming ? (
             <>
-              <button
-                type="button"
-                className="icon-button"
-                onClick={() => onOpenFile(job.outputPath ?? '')}
-              >
-                Open
-              </button>
-              <button
-                type="button"
-                className="icon-button"
-                onClick={() => onShowInFolder(job.outputPath ?? '')}
-              >
-                Folder
-              </button>
-              <button
-                type="button"
-                className="icon-button"
-                onClick={() => onRenameOutputFile(job.outputPath ?? '')}
-              >
-                Rename
-              </button>
+              <button type="button" className="icon-button" onClick={() => onOpenFile(job.outputPath ?? '')}>Open</button>
+              <button type="button" className="icon-button" onClick={() => onShowInFolder(job.outputPath ?? '')}>Folder</button>
+              <button type="button" className="icon-button" onClick={startRename}>Rename</button>
+            </>
+          ) : null}
+          {isRenaming ? (
+            <>
+              <input
+                ref={inputRef}
+                className="queue-item-name-input"
+                style={{ width: '160px' }}
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onBlur={commitRename}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter')  { e.preventDefault(); commitRename(); }
+                  if (e.key === 'Escape') { e.preventDefault(); cancelRename(); }
+                }}
+                autoFocus
+                aria-label="New file name"
+              />
+              <button type="button" className="icon-button" onClick={commitRename}>✓</button>
+              <button type="button" className="icon-button" onClick={cancelRename}>✕</button>
             </>
           ) : null}
         </div>

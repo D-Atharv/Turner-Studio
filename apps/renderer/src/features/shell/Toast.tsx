@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
-
-type ToastProps = {
-  message: string;
-  onDismiss: () => void;
-};
+import type { AppToast, ToastVariant } from '@/state/types';
 
 const AUTODISMISS_MS = 6000;
+
+const VARIANT_ICONS: Record<ToastVariant, string> = {
+  error:   '⚠',
+  success: '✓',
+  info:    'ℹ'
+};
 
 const toFriendlyMessage = (raw: string): string => {
   const lower = raw.toLowerCase();
@@ -21,29 +23,38 @@ const toFriendlyMessage = (raw: string): string => {
   if (lower.includes('timeout') || lower.includes('timed out')) {
     return 'Conversion timed out. Try increasing the timeout in Settings → Timeout.';
   }
-  if (lower.includes('webm') && lower.includes('ignored')) {
-    return raw; // keep the already-friendly "N file(s) ignored" message
-  }
   return raw;
 };
 
-export const Toast = ({ message, onDismiss }: ToastProps) => {
+type ToastItemProps = {
+  toast: AppToast;
+  onDismiss: (id: string) => void;
+};
+
+const ToastItem = ({ toast, onDismiss }: ToastItemProps) => {
   const [exiting, setExiting] = useState(false);
 
   const dismiss = () => {
     setExiting(true);
-    setTimeout(onDismiss, 200);
+    setTimeout(() => onDismiss(toast.id), 200);
   };
 
   useEffect(() => {
     const timer = setTimeout(dismiss, AUTODISMISS_MS);
     return () => clearTimeout(timer);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toast.id]);
 
   return (
-    <div className={`toast${exiting ? ' toast--exit' : ''}`} role="alert" aria-live="assertive">
-      <span className="toast-icon" aria-hidden="true">⚠</span>
-      <span className="toast-message">{toFriendlyMessage(message)}</span>
+    <div
+      className={`toast toast--${toast.variant}${exiting ? ' toast--exit' : ''}`}
+      role={toast.variant === 'error' ? 'alert' : 'status'}
+      aria-live={toast.variant === 'error' ? 'assertive' : 'polite'}
+    >
+      <span className="toast-icon" aria-hidden="true">{VARIANT_ICONS[toast.variant]}</span>
+      <span className="toast-message">
+        {toast.variant === 'error' ? toFriendlyMessage(toast.message) : toast.message}
+      </span>
       <button
         type="button"
         className="toast-dismiss"
@@ -57,15 +68,17 @@ export const Toast = ({ message, onDismiss }: ToastProps) => {
 };
 
 type ToastListProps = {
-  error: string | undefined;
-  onClear: () => void;
+  toasts: AppToast[];
+  onDismiss: (id: string) => void;
 };
 
-export const ToastList = ({ error, onClear }: ToastListProps) => {
-  if (!error) return null;
+export const ToastList = ({ toasts, onDismiss }: ToastListProps) => {
+  if (toasts.length === 0) return null;
   return (
     <div className="toast-list" aria-label="Notifications">
-      <Toast key={error} message={error} onDismiss={onClear} />
+      {toasts.map((toast) => (
+        <ToastItem key={toast.id} toast={toast} onDismiss={onDismiss} />
+      ))}
     </div>
   );
 };

@@ -1,3 +1,4 @@
+import { getProfileByIdOrDefault } from '@turner/shared';
 import type { UiJob } from '@/state/types';
 import { deriveLiveEtaSeconds } from './eta';
 import {
@@ -12,6 +13,7 @@ import {
 
 type ActiveProcessPanelProps = {
   job: UiJob | undefined;
+  profileId: string;
   notifyOnCompletion: boolean;
   onCancel: (jobId: string) => void;
   onOpenFile: (outputPath: string) => void;
@@ -29,11 +31,13 @@ const MetricCell = ({ label, value }: MetricCellProps) => (
 
 export const ActiveProcessPanel = ({
   job,
+  profileId,
   notifyOnCompletion,
   onCancel,
   onOpenFile,
   onShowInFolder
 }: ActiveProcessPanelProps) => {
+  const profile = getProfileByIdOrDefault(profileId);
   if (!job) {
     return (
       <section className="active-process panel-fade-in">
@@ -58,7 +62,7 @@ export const ActiveProcessPanel = ({
         <div className="active-row">
           <div className="active-file-info">
             <strong title={job.inputPath}>{shortName(job.inputPath)}</strong>
-            <span className="active-file-meta">Output: MP4 · H.264 / AAC</span>
+            <span className="active-file-meta">{profile.description}</span>
           </div>
           <div className="active-row-end">
             <span className="active-status-badge">{statusLabel(job.status)}</span>

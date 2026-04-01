@@ -1,4 +1,17 @@
 import type { AppError, AppSettings, AppSettingsPatch, ConvertStatusChangedEvent, Preset } from '@turner/contracts';
+import { DEFAULT_PROFILE_ID, type ConversionProfileId } from '@turner/shared';
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+
+export type ToastVariant = 'error' | 'success' | 'info';
+
+export type AppToast = {
+  id: string;
+  variant: ToastVariant;
+  message: string;
+};
+
+// ── Job ───────────────────────────────────────────────────────────────────────
 
 export type UiJob = {
   jobId: string;
@@ -24,7 +37,8 @@ export type AppState = {
   isEnqueueing: boolean;
   jobsById: Record<string, UiJob>;
   jobOrder: string[];
-  appError: string | undefined;
+  toasts: AppToast[];
+  selectedProfileId: ConversionProfileId;
 };
 
 export type Action =
@@ -32,7 +46,10 @@ export type Action =
   | { type: 'settingsUpdated'; payload: AppSettings }
   | { type: 'setSettingsOpen'; payload: boolean }
   | { type: 'setEnqueueing'; payload: boolean }
+  // setAppError is kept for backward-compat — it pushes an error toast
   | { type: 'setAppError'; payload: string | undefined }
+  | { type: 'pushToast'; payload: AppToast }
+  | { type: 'dismissToast'; payload: string }
   | { type: 'jobsQueued'; payload: Array<{ jobId: string; inputPath: string }> }
   | {
       type: 'progress';
@@ -50,7 +67,8 @@ export type Action =
     }
   | { type: 'outputRenamed'; payload: { previousPath: string; nextPath: string } }
   | { type: 'setPreferredOutputName'; payload: { jobId: string; name: string } }
-  | { type: 'jobFileSizeLoaded'; payload: { jobId: string; sizeBytes: number } };
+  | { type: 'jobFileSizeLoaded'; payload: { jobId: string; sizeBytes: number } }
+  | { type: 'setConversionProfile'; payload: ConversionProfileId };
 
 export const DEFAULT_SETTINGS: AppSettings = {
   schemaVersion: 1,
@@ -69,7 +87,8 @@ export const INITIAL_STATE: AppState = {
   isEnqueueing: false,
   jobsById: {},
   jobOrder: [],
-  appError: undefined
+  toasts: [],
+  selectedProfileId: DEFAULT_PROFILE_ID
 };
 
 export const toSettingsPatch = (settings: AppSettings): AppSettingsPatch => ({

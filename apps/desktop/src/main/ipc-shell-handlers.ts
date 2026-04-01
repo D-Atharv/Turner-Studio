@@ -25,14 +25,24 @@ export const registerShellHandlers = (window: BrowserWindow, toIpcError: ToIpcEr
     }
   );
 
-  ipcMain.handle(IPC_COMMANDS.SHELL_PICK_WEBM_FILES, async () => {
+  ipcMain.handle(IPC_COMMANDS.SHELL_PICK_WEBM_FILES, async (_event, extensions: string[]) => {
+    // Strip leading dots — Electron's dialog filter expects bare extensions ('mp4' not '.mp4')
+    const bare = (Array.isArray(extensions) ? extensions : [])
+      .map((e) => e.replace(/^\./, ''))
+      .filter(Boolean);
+
+    const filters = bare.length > 0
+      ? [
+          { name: 'Video Files', extensions: bare },
+          { name: 'All Files',   extensions: ['*'] }
+        ]
+      : [{ name: 'All Files', extensions: ['*'] }];
+
     const picked = await dialog.showOpenDialog(window, {
       properties: ['openFile', 'multiSelections'],
-      filters: [
-        { name: 'WebM Videos', extensions: ['webm'] },
-        { name: 'All Files', extensions: ['*'] }
-      ]
+      filters
     });
+
     return picked.canceled ? [] : picked.filePaths;
   });
 

@@ -8,7 +8,7 @@ type LibraryWorkspaceProps = {
   completedJobs: UiJob[];
   onOpenFile: (outputPath: string) => void;
   onShowInFolder: (outputPath: string) => void;
-  onRenameOutputFile: (outputPath: string) => void;
+  onRenameOutputFile: (outputPath: string, nextName: string) => void;
 };
 
 const FILTER_LABELS: Record<StatusFilter, string> = {

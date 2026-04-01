@@ -1,23 +1,28 @@
 import path from 'node:path';
-import { FILE_EXTENSIONS, createAppError, err, ok, type Result } from '@turner/shared';
+import { getAllAcceptedExtensions, createAppError, err, ok, type Result } from '@turner/shared';
 
-export const validateWebmInputPath = (inputPath: string): Result<string> => {
+export const validateVideoInputPath = (inputPath: string): Result<string> => {
   const trimmed = inputPath.trim();
 
   if (trimmed.length === 0) {
     return err(createAppError('VALIDATION_ERROR', 'Input path cannot be empty'));
   }
 
-  if (path.extname(trimmed).toLowerCase() !== FILE_EXTENSIONS.WEBM) {
+  const ext = path.extname(trimmed).toLowerCase();
+  const accepted = getAllAcceptedExtensions();
+  if (!accepted.includes(ext)) {
     return err(
-      createAppError('VALIDATION_ERROR', 'Only .webm input files are supported', {
-        details: { inputPath: trimmed }
+      createAppError('VALIDATION_ERROR', `Unsupported input format "${ext}". Accepted: ${accepted.join(', ')}`, {
+        details: { inputPath: trimmed, ext }
       })
     );
   }
 
   return ok(trimmed);
 };
+
+/** @deprecated Use validateVideoInputPath — kept for backward-compat during migration. */
+export const validateWebmInputPath = validateVideoInputPath;
 
 export const dedupeInputPaths = (inputPaths: string[]): string[] => {
   const seen = new Set<string>();

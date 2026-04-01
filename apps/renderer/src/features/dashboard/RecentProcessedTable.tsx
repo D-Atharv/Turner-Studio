@@ -1,5 +1,7 @@
+import { useRef, useState } from 'react';
 import type { UiJob } from '@/state/types';
 import type { JobStatus } from '@turner/contracts';
+import { fileNameFromPath } from '@/features/jobs/file-paths';
 import { formatHMS, shortName } from './formatters';
 
 type RecentProcessedTableProps = {
@@ -8,7 +10,7 @@ type RecentProcessedTableProps = {
   limit?: number;
   onOpenFile?: (outputPath: string) => void;
   onShowInFolder?: (outputPath: string) => void;
-  onRenameOutputFile?: (outputPath: string) => void;
+  onRenameOutputFile?: (outputPath: string, nextName: string) => void;
 };
 
 const STATUS_LABELS: Record<JobStatus, string> = {
@@ -33,6 +35,97 @@ const formatJobDuration = (job: UiJob): string => {
     return formatHMS(Math.max(0, Math.round((job.endedAt - job.startedAt) / 1000)));
   }
   return '—';
+};
+
+/** Derive the base name (no extension) from the current output path or input path. */
+const deriveBaseName = (job: UiJob): string => {
+  const source = job.outputPath ?? job.inputPath;
+  const name = fileNameFromPath(source);
+  const dot = name.lastIndexOf('.');
+  return dot > 0 ? name.slice(0, dot) : name;
+};
+
+type RowActionsProps = {
+  job: UiJob;
+  onOpenFile: ((outputPath: string) => void) | undefined;
+  onShowInFolder: ((outputPath: string) => void) | undefined;
+  onRenameOutputFile: ((outputPath: string, nextName: string) => void) | undefined;
+};
+
+const RowActions = ({ job, onOpenFile, onShowInFolder, onRenameOutputFile }: RowActionsProps) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [draft, setDraft] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const canAct = Boolean(job.outputPath);
+
+  const startEditing = () => {
+    if (!canAct || !onRenameOutputFile) return;
+    setDraft(deriveBaseName(job));
+    setIsEditing(true);
+    setTimeout(() => inputRef.current?.select(), 0);
+  };
+
+  const commit = () => {
+    const trimmed = draft.trim();
+    if (trimmed && job.outputPath && onRenameOutputFile) {
+      onRenameOutputFile(job.outputPath, trimmed);
+    }
+    setIsEditing(false);
+  };
+
+  const cancel = () => setIsEditing(false);
+
+  if (isEditing) {
+    return (
+      <div className="row-actions row-actions--editing">
+        <input
+          ref={inputRef}
+          className="queue-item-name-input"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter')  { e.preventDefault(); commit(); }
+            if (e.key === 'Escape') { e.preventDefault(); cancel(); }
+          }}
+          autoFocus
+          aria-label="New file name"
+        />
+        <button type="button" className="inline-button" onClick={commit}>Save</button>
+        <button type="button" className="inline-button" onClick={cancel}>✕</button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="row-actions">
+      <button
+        type="button"
+        className="inline-button"
+        disabled={!canAct}
+        onClick={() => { if (job.outputPath) onOpenFile?.(job.outputPath); }}
+      >
+        Open
+      </button>
+      <button
+        type="button"
+        className="inline-button"
+        disabled={!canAct}
+        onClick={() => { if (job.outputPath) onShowInFolder?.(job.outputPath); }}
+      >
+        Folder
+      </button>
+      <button
+        type="button"
+        className="inline-button"
+        disabled={!canAct || !onRenameOutputFile}
+        onClick={startEditing}
+      >
+        Rename
+      </button>
+    </div>
+  );
 };
 
 export const RecentProcessedTable = ({
@@ -65,42 +158,18 @@ export const RecentProcessedTable = ({
             <tbody>
               {visibleJobs.map((job) => (
                 <tr key={job.jobId}>
-                  <td title={job.inputPath}>{shortName(job.inputPath)}</td>
+                  <td title={job.outputPath ?? job.inputPath}>
+                    {shortName(job.outputPath ?? job.inputPath)}
+                  </td>
                   <td>{formatJobDuration(job)}</td>
                   <td><StatusCell status={job.status} /></td>
                   <td>
-                    <div className="row-actions">
-                      <button
-                        type="button"
-                        className="inline-button"
-                        disabled={!job.outputPath}
-                        onClick={() => {
-                          if (job.outputPath) onOpenFile?.(job.outputPath);
-                        }}
-                      >
-                        Open
-                      </button>
-                      <button
-                        type="button"
-                        className="inline-button"
-                        disabled={!job.outputPath}
-                        onClick={() => {
-                          if (job.outputPath) onShowInFolder?.(job.outputPath);
-                        }}
-                      >
-                        Folder
-                      </button>
-                      <button
-                        type="button"
-                        className="inline-button"
-                        disabled={!job.outputPath}
-                        onClick={() => {
-                          if (job.outputPath) onRenameOutputFile?.(job.outputPath);
-                        }}
-                      >
-                        Rename
-                      </button>
-                    </div>
+                    <RowActions
+                      job={job}
+                      onOpenFile={onOpenFile}
+                      onShowInFolder={onShowInFolder}
+                      onRenameOutputFile={onRenameOutputFile}
+                    />
                   </td>
                 </tr>
               ))}

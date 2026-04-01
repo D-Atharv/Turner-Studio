@@ -33,7 +33,7 @@ export const WorkflowSection = ({
       </label>
       <p className="field-help">
         {notifyOnCompletion
-          ? 'Turner will show a system popup on completion or failure, so you can work in other apps meanwhile.'
+          ? 'Turner will show a system popup on completion or failure, so you can work in other apps meanwhile.(Make sure to allow notifications for Turner in your system settings.)'
           : 'No desktop popup will be shown. Check progress inside Turner manually.'}
       </p>
     </section>

@@ -1,7 +1,21 @@
 export const FILE_EXTENSIONS = {
   WEBM: '.webm',
-  MP4: '.mp4'
+  MPEG: '.mpeg',
+  MPG:  '.mpg',
+  MP4:  '.mp4'
 } as const;
+
+/**
+ * @deprecated Use getAllAcceptedExtensions() from conversion-profiles —
+ * it derives the list from the live profile registry and is always in sync.
+ * This constant is kept only for call-sites that have not yet migrated.
+ */
+export const ACCEPTED_INPUT_EXTENSIONS: readonly string[] = [
+  FILE_EXTENSIONS.WEBM,
+  FILE_EXTENSIONS.MPEG,
+  FILE_EXTENSIONS.MPG,
+  FILE_EXTENSIONS.MP4
+] as const;
 
 export const JOB_STATUS = {
   WAITING: 'waiting',

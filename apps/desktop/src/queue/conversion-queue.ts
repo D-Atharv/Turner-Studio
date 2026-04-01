@@ -5,7 +5,7 @@ import type { ConvertJob, ConvertOptions } from '@turner/contracts';
 import type { MediaEngineRunner } from '@turner/media-engine';
 import type { Logger } from '@turner/observability';
 import { resolveOutputPath } from '@turner/domain';
-import { createAppError, err, ok, type Result } from '@turner/shared';
+import { createAppError, err, ok, getProfileByIdOrDefault, getOutputExtension, type Result } from '@turner/shared';
 import { prepareJobsForEnqueue } from './enqueue-preparation.js';
 import { cleanupOriginalOnSuccess, emitStatus, resolveEtaSeconds } from './queue-helpers.js';
 import type { ActiveTask, ConversionQueueEvents } from './queue-types.js';
@@ -84,10 +84,12 @@ export class ConversionQueue {
       return err(createAppError('VALIDATION_ERROR', 'Only waiting jobs can be renamed'));
     }
 
+    const options = this.optionsByJobId.get(jobId);
     const resolved = resolveOutputPath({
       inputPath: job.inputPath,
       outputDir: path.dirname(job.outputPath),
       outputFileBaseName: outputName,
+      outputExtension: options ? getOutputExtension(options.profileId) : undefined,
       exists: fsSync.existsSync
     });
     if (!resolved.ok) return resolved;

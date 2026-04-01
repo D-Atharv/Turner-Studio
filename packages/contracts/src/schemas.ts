@@ -1,16 +1,27 @@
 import { z } from 'zod';
-import { APP_SETTINGS_SCHEMA_VERSION, CONVERSION_DEFAULTS, CONVERSION_LIMITS } from '@turner/shared';
+import {
+  APP_SETTINGS_SCHEMA_VERSION,
+  CONVERSION_DEFAULTS,
+  CONVERSION_LIMITS,
+  CONVERSION_PROFILES,
+  DEFAULT_PROFILE_ID,
+  type ConversionProfileId
+} from '@turner/shared';
 import { PRESET_VALUES } from './types.js';
+
+const profileIdValues = CONVERSION_PROFILES.map((p) => p.id) as [ConversionProfileId, ...ConversionProfileId[]];
+const profileIdSchema = z.enum(profileIdValues).default(DEFAULT_PROFILE_ID);
 
 const presetSchema = z.enum(PRESET_VALUES);
 
 export const convertOptionsSchema = z.object({
-  outputDir: z.string().trim().min(1).optional(),
-  crf: z.int().min(CONVERSION_LIMITS.CRF_MIN).max(CONVERSION_LIMITS.CRF_MAX).default(CONVERSION_DEFAULTS.CRF),
-  preset: presetSchema.default(CONVERSION_DEFAULTS.PRESET),
-  audioBitrate: z.string().regex(/^\d+k$/, 'Audio bitrate must look like 128k').default(CONVERSION_DEFAULTS.AUDIO_BITRATE),
-  keepOriginal: z.boolean().default(CONVERSION_DEFAULTS.KEEP_ORIGINAL),
-  timeoutMs: z.int().min(5_000).max(60 * 60 * 1000).default(CONVERSION_DEFAULTS.CONVERSION_TIMEOUT_MS)
+  profileId:   profileIdSchema,
+  outputDir:   z.string().trim().min(1).optional(),
+  crf:         z.int().min(CONVERSION_LIMITS.CRF_MIN).max(CONVERSION_LIMITS.CRF_MAX).default(CONVERSION_DEFAULTS.CRF),
+  preset:      presetSchema.default(CONVERSION_DEFAULTS.PRESET),
+  audioBitrate:z.string().regex(/^\d+k$/, 'Audio bitrate must look like 128k').default(CONVERSION_DEFAULTS.AUDIO_BITRATE),
+  keepOriginal:z.boolean().default(CONVERSION_DEFAULTS.KEEP_ORIGINAL),
+  timeoutMs:   z.int().min(5_000).max(60 * 60 * 1000).default(CONVERSION_DEFAULTS.CONVERSION_TIMEOUT_MS)
 });
 
 export const convertRequestSchema = z.object({

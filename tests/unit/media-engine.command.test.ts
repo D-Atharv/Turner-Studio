@@ -4,6 +4,7 @@ import { buildFfmpegArgs } from '@turner/media-engine';
 describe('ffmpeg command builder', () => {
   it('includes required compatibility flags and codecs', () => {
     const args = buildFfmpegArgs('/tmp/input.webm', '/tmp/output.mp4', {
+      profileId: 'webm-to-mp4',
       crf: 23,
       preset: 'medium',
       audioBitrate: '128k',

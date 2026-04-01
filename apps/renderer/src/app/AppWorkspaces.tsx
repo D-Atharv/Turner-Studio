@@ -1,4 +1,5 @@
 import type { AppSettings } from '@turner/contracts';
+import type { ConversionProfileId } from '@turner/shared';
 import { ConverterWorkspace } from '@/features/dashboard/ConverterWorkspace';
 import { LibraryWorkspace } from '@/features/dashboard/LibraryWorkspace';
 import { QueueWorkspace } from '@/features/dashboard/QueueWorkspace';
@@ -24,8 +25,10 @@ type AppWorkspacesProps = {
   onCancel: (jobId: string) => void;
   onOpenFile: (outputPath: string) => void;
   onShowInFolder: (outputPath: string) => void;
-  onRenameOutputFile: (outputPath: string) => void;
+  onRenameOutputFile: (outputPath: string, nextName: string) => void;
   onSetPreferredName: (jobId: string, name: string) => void;
+  selectedProfileId: ConversionProfileId;
+  onSelectProfile: (profileId: ConversionProfileId) => void;
   onSettingsSave: (settings: AppSettings) => Promise<void>;
   onPickOutputFolder: () => Promise<string | null>;
   onSettingsClose: () => void;
@@ -50,6 +53,8 @@ export const AppWorkspaces = ({
   onShowInFolder,
   onRenameOutputFile,
   onSetPreferredName,
+  selectedProfileId,
+  onSelectProfile,
   onSettingsSave,
   onPickOutputFolder,
   onSettingsClose
@@ -109,6 +114,8 @@ export const AppWorkspaces = ({
       onShowInFolder={onShowInFolder}
       onRenameOutputFile={onRenameOutputFile}
       onSetPreferredName={onSetPreferredName}
+      selectedProfileId={selectedProfileId}
+      onSelectProfile={onSelectProfile}
     />
   );
 };

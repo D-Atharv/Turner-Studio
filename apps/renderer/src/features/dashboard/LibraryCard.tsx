@@ -1,12 +1,13 @@
+import { useRef, useState } from 'react';
 import type { UiJob } from '@/state/types';
-import { fileNameFromPath } from '@/features/jobs/file-paths';
+import { fileExtLabel, fileNameFromPath } from '@/features/jobs/file-paths';
 import { formatHMS } from './formatters';
 
 type LibraryCardProps = {
   job: UiJob;
   onOpenFile: (outputPath: string) => void;
   onShowInFolder: (outputPath: string) => void;
-  onRenameOutputFile: (outputPath: string) => void;
+  onRenameOutputFile: (outputPath: string, nextName: string) => void;
 };
 
 const formatTimestamp = (ms: number | undefined): string => {
@@ -24,18 +25,49 @@ const getJobDuration = (job: UiJob): string => {
   return '—';
 };
 
+/** Derive the base name (no extension) from the current output path or input path. */
+const deriveBaseName = (job: UiJob): string => {
+  const source = job.outputPath ?? job.inputPath;
+  const name = fileNameFromPath(source);
+  const dot = name.lastIndexOf('.');
+  return dot > 0 ? name.slice(0, dot) : name;
+};
+
 export const LibraryCard = ({ job, onOpenFile, onShowInFolder, onRenameOutputFile }: LibraryCardProps) => {
-  const filename = fileNameFromPath(job.inputPath);
+  const [isEditing, setIsEditing]     = useState(false);
+  const [draft, setDraft]             = useState('');
+  const inputRef                      = useRef<HTMLInputElement>(null);
+
+  const filename    = fileNameFromPath(job.inputPath);
+  const inputFormat = fileExtLabel(job.inputPath);
   const isDone      = job.status === 'done';
   const isFailed    = job.status === 'failed';
   const isCancelled = job.status === 'cancelled';
+  const canAct      = isDone && Boolean(job.outputPath);
+
+  const startEditing = () => {
+    if (!canAct) return;
+    setDraft(deriveBaseName(job));
+    setIsEditing(true);
+    setTimeout(() => inputRef.current?.select(), 0);
+  };
+
+  const commit = () => {
+    const trimmed = draft.trim();
+    if (trimmed && job.outputPath) {
+      onRenameOutputFile(job.outputPath, trimmed);
+    }
+    setIsEditing(false);
+  };
+
+  const cancel = () => setIsEditing(false);
 
   return (
     <article className={`library-card lc-status-${job.status}`}>
       {/* ── Preview ── */}
       <div className="library-card-preview">
         <div className="lc-badges">
-          <span className="lc-badge">WEBM</span>
+          <span className="lc-badge">{inputFormat}</span>
           {isDone ? <span className="lc-badge lc-badge--mp4">MP4</span> : null}
         </div>
         {isFailed    ? <span className="lc-overlay-badge lc-overlay-badge--failed">FAILED</span>    : null}
@@ -65,39 +97,65 @@ export const LibraryCard = ({ job, onOpenFile, onShowInFolder, onRenameOutputFil
           <p className="lc-error-msg">{job.error.message}</p>
         ) : null}
 
+        {/* Inline rename input */}
+        {isEditing ? (
+          <div className="lc-rename-row">
+            <input
+              ref={inputRef}
+              className="queue-item-name-input"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onBlur={commit}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter')  { e.preventDefault(); commit(); }
+                if (e.key === 'Escape') { e.preventDefault(); cancel(); }
+              }}
+              autoFocus
+              aria-label="New file name"
+            />
+          </div>
+        ) : null}
+
         <div className="lc-footer">
           <span className={`lc-status-chip lc-status-chip--${job.status}`}>
             {isDone ? '✓ Success' : isFailed ? '✕ Failed' : '◎ Cancelled'}
           </span>
-          <div className="lc-actions">
-            <button
-              type="button"
-              className="icon-button"
-              title="Show in Folder"
-              disabled={!job.outputPath}
-              onClick={() => { if (job.outputPath) onShowInFolder(job.outputPath); }}
-            >
-              ⊡
-            </button>
-            <button
-              type="button"
-              className="icon-button"
-              title="Open File"
-              disabled={!job.outputPath}
-              onClick={() => { if (job.outputPath) onOpenFile(job.outputPath); }}
-            >
-              ▷
-            </button>
-            <button
-              type="button"
-              className="icon-button"
-              title="Rename File"
-              disabled={!job.outputPath}
-              onClick={() => { if (job.outputPath) onRenameOutputFile(job.outputPath); }}
-            >
-              ✎
-            </button>
-          </div>
+          {!isEditing ? (
+            <div className="lc-actions">
+              <button
+                type="button"
+                className="icon-button"
+                title="Show in Folder"
+                disabled={!canAct}
+                onClick={() => { if (job.outputPath) onShowInFolder(job.outputPath); }}
+              >
+                ⊡
+              </button>
+              <button
+                type="button"
+                className="icon-button"
+                title="Open File"
+                disabled={!canAct}
+                onClick={() => { if (job.outputPath) onOpenFile(job.outputPath); }}
+              >
+                ▷
+              </button>
+              <button
+                type="button"
+                className="icon-button"
+                title="Rename File"
+                disabled={!canAct}
+                onClick={startEditing}
+              >
+                ✎
+              </button>
+            </div>
+          ) : (
+            <div className="lc-actions">
+              <button type="button" className="icon-button" onClick={commit} title="Save rename">✓</button>
+              <button type="button" className="icon-button" onClick={cancel} title="Cancel rename">✕</button>
+            </div>
+          )}
         </div>
       </div>
     </article>

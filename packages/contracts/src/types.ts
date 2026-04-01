@@ -1,9 +1,10 @@
-import type { AppError } from '@turner/shared';
+import type { AppError, ConversionProfileId } from '@turner/shared';
 
 export const PRESET_VALUES = ['ultrafast', 'veryfast', 'fast', 'medium', 'slow'] as const;
 export type Preset = (typeof PRESET_VALUES)[number];
 
 export type ConvertOptions = {
+  profileId: ConversionProfileId;
   outputDir?: string | undefined;
   crf: number;
   preset: Preset;
@@ -86,7 +87,7 @@ export type TurnerApi = {
     openFile: (targetPath: string) => Promise<void>;
     showInFolder: (targetPath: string) => Promise<void>;
     renameFile: (targetPath: string, nextName: string) => Promise<string>;
-    pickWebmFiles: () => Promise<string[]>;
+    pickWebmFiles: (extensions: readonly string[]) => Promise<string[]>;
     pickOutputFolder: () => Promise<string | null>;
     getFileSize: (filePath: string) => Promise<number | null>;
   };

@@ -2,19 +2,34 @@
    CONVERTER WORKSPACE LAYOUT
 ═══════════════════════════════════════════════════════ */
 
+/* Fill the view-scroll column; fixed sections above, lower-grid scrolls below */
+.converter-workspace {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  overflow: hidden; /* clip — only lower-grid scrolls internally */
+}
+
 .converter-grid {
+  flex-shrink: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
   gap: 1.25rem;
 }
 
+/* Format selector + active process never shrink — they always take their natural height */
+.format-selector-wrap { flex-shrink: 0; }
+.active-process       { flex-shrink: 0; }
+
+/* Lower grid: grows to fill space when available; guaranteed min-height so it
+   stays readable even while the active process panel is open */
 .lower-grid {
+  flex: 1 0 260px; /* grow freely, never shrink below 260px */
   display: grid;
   grid-template-columns: minmax(0, 1fr) 280px;
   gap: 1.25rem;
-  /* Cap height so lower panels never cause page scroll */
-  min-height: 0;
-  height: min(400px, 40vh);
 }
 
 .lower-grid .recent-panel,
@@ -22,7 +37,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  min-height: 0;
 }
 
 .lower-grid .recent-table-wrap {
@@ -32,15 +47,18 @@
 }
 
 .lower-grid .queue-panel ul {
-  /* Override the global max-height — the parent now constrains height */
   max-height: none;
   flex: 1;
   min-height: 0;
   overflow-y: auto;
 }
 
-.workspace-stack { display: grid; gap: 1.25rem; }
-.workspace-grid  { display: grid; gap: 1.25rem; }
+.workspace-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.workspace-grid { display: grid; gap: 1.25rem; }
 
 /* ═══════════════════════════════════════════════════════
    SHARED PANEL CHROME
@@ -80,7 +98,7 @@
   position: relative;
   border: 1.5px dashed rgba(183, 196, 255, 0.2);
   border-radius: var(--radius-lg);
-  min-height: 280px;
+  min-height: 180px;
   padding: 2rem;
   display: flex;
   flex-direction: column;
@@ -624,4 +642,125 @@
 .lc-actions {
   display: flex;
   gap: 0.3rem;
+}
+
+/* Inline rename input row inside LibraryCard */
+.lc-rename-row {
+  margin: 0.35rem 0;
+}
+
+.lc-rename-row .queue-item-name-input {
+  width: 100%;
+}
+
+/* Row actions in editing mode */
+.row-actions--editing {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.row-actions--editing .queue-item-name-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.8rem;
+}
+
+/* ═══════════════════════════════════════════════════════
+   FORMAT SELECTOR — two dropdowns (FROM → TO)
+   Sits between the converter grid and the active process panel
+═══════════════════════════════════════════════════════ */
+
+.format-selector-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem;
+  background: var(--surface-low);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-lg);
+}
+
+/* "CONVERT" label */
+.format-selector-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+  font-family: var(--font-label);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* "→" arrow between the two dropdowns */
+.format-selector-arrow {
+  font-size: 0.85rem;
+  color: var(--primary);
+  font-weight: 700;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+/* Custom select wrapper — positions the caret overlay */
+.format-selector-control {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.format-selector-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--surface-high);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: var(--font-ui, inherit);
+  padding: 0.38rem 2rem 0.38rem 0.75rem;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    background   150ms ease;
+  min-width: 6.5rem;
+  line-height: 1.4;
+}
+
+.format-selector-select:hover {
+  border-color: var(--outline-var);
+  background: var(--surface-bright);
+}
+
+.format-selector-select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(183, 196, 255, 0.18);
+}
+
+.format-selector-select:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.format-selector-caret {
+  position: absolute;
+  right: 0.6rem;
+  pointer-events: none;
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  line-height: 1;
+}
+
+/* Codec hint — fills remaining horizontal space */
+.format-selector-hint {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  line-height: 1.4;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

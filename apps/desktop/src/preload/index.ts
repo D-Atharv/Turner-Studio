@@ -59,7 +59,8 @@ const api: TurnerApi = {
       ipcRenderer.invoke(IPC_COMMANDS.SHELL_SHOW_IN_FOLDER, targetPath),
     renameFile: (targetPath: string, nextName: string): Promise<string> =>
       ipcRenderer.invoke(IPC_COMMANDS.SHELL_RENAME_FILE, { targetPath, nextName }),
-    pickWebmFiles: (): Promise<string[]> => ipcRenderer.invoke(IPC_COMMANDS.SHELL_PICK_WEBM_FILES),
+    pickWebmFiles: (extensions: readonly string[]): Promise<string[]> =>
+      ipcRenderer.invoke(IPC_COMMANDS.SHELL_PICK_WEBM_FILES, extensions),
     pickOutputFolder: (): Promise<string | null> => ipcRenderer.invoke(IPC_COMMANDS.SHELL_PICK_OUTPUT_FOLDER),
     getFileSize: (filePath: string): Promise<number | null> =>
       ipcRenderer.invoke(IPC_COMMANDS.SHELL_GET_FILE_SIZE, filePath)

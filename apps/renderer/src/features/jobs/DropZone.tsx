@@ -3,6 +3,12 @@ import { extractPathsFromFileList } from './file-paths';
 
 type DropZoneProps = {
   disabled?: boolean;
+  /**
+   * Extensions accepted for this drop zone, derived from the currently
+   * selected conversion profile's input format (e.g. ['.mp4'] for MP4 → WebM).
+   * Drop events are filtered to these extensions and the subtitle reflects them.
+   */
+  acceptedExtensions: readonly string[];
   onPathsSelected: (paths: string[]) => void;
   onBrowse: () => void;
   onError: (message: string) => void;
@@ -10,22 +16,26 @@ type DropZoneProps = {
 
 export const DropZone = ({
   disabled,
+  acceptedExtensions,
   onPathsSelected,
   onBrowse,
   onError
 }: DropZoneProps) => {
   const [isHovering, setIsHovering] = useState(false);
 
-  const handleFiles = (files: FileList | null) => {
-    const extracted = extractPathsFromFileList(files);
+  // Human-readable subtitle: ".webm · .mpeg · .mpg — or click to browse"
+  const acceptedLabel = acceptedExtensions.join(' · ');
 
-    if (extracted.acceptedPaths.length > 0) {
-      onPathsSelected(extracted.acceptedPaths);
+  const handleFiles = (files: FileList | null) => {
+    const { acceptedPaths, rejectedCount } = extractPathsFromFileList(files, acceptedExtensions);
+
+    if (acceptedPaths.length > 0) {
+      onPathsSelected(acceptedPaths);
     }
 
-    if (extracted.rejectedCount > 0) {
+    if (rejectedCount > 0) {
       onError(
-        `${extracted.rejectedCount} file(s) ignored — only .webm files are supported.`
+        `${rejectedCount} file(s) ignored — current profile only accepts ${acceptedLabel} files.`
       );
     }
   };
@@ -44,11 +54,7 @@ export const DropZone = ({
     }
   };
 
-  const zoneClass = [
-    'dropzone',
-    isHovering ? 'is-hovering' : '',
-    disabled    ? 'is-disabled' : ''
-  ]
+  const zoneClass = ['dropzone', isHovering && 'is-hovering', disabled && 'is-disabled']
     .filter(Boolean)
     .join(' ');
 
@@ -58,7 +64,7 @@ export const DropZone = ({
       role="button"
       tabIndex={disabled ? -1 : 0}
       aria-disabled={disabled}
-      aria-label="Drop WebM files here or press Enter to browse"
+      aria-label={`Drop ${acceptedLabel} video files here or press Enter to browse`}
       onDragEnter={(e) => { e.preventDefault(); if (!disabled) setIsHovering(true); }}
       onDragOver={(e)  => { e.preventDefault(); }}
       onDragLeave={(e) => { e.preventDefault(); setIsHovering(false); }}
@@ -66,17 +72,17 @@ export const DropZone = ({
       onClick={() => { if (!disabled) onBrowse(); }}
       onKeyDown={handleKeyDown}
     >
-      {/* Upload icon */}
       <div className="dropzone-icon" aria-hidden="true">⇪</div>
 
-      <p className="dropzone-title">Drop .webm files here</p>
-      <p className="dropzone-subtitle">or click to open native file picker</p>
+      <p className="dropzone-title">Drop video files here</p>
+      <p className="dropzone-subtitle">{acceptedLabel} — or click to browse</p>
 
-      {/* Supported output formats */}
       <div className="dropzone-formats" aria-hidden="true">
-        <span className="format-badge">H.264</span>
-        <span className="format-badge">AAC</span>
-        <span className="format-badge">MP4</span>
+        {acceptedExtensions.map((ext) => (
+          <span key={ext} className="format-badge">
+            {ext.replace(/^\./, '').toUpperCase()}
+          </span>
+        ))}
       </div>
     </div>
   );
