@@ -6,9 +6,9 @@ import type { MediaEngineRunner } from '@turner/media-engine';
 import type { Logger } from '@turner/observability';
 import { resolveOutputPath } from '@turner/domain';
 import { createAppError, err, ok, type Result } from '@turner/shared';
-import { prepareJobsForEnqueue } from './enqueue-preparation';
-import { cleanupOriginalOnSuccess, emitStatus, resolveEtaSeconds } from './queue-helpers';
-import type { ActiveTask, ConversionQueueEvents } from './queue-types';
+import { prepareJobsForEnqueue } from './enqueue-preparation.js';
+import { cleanupOriginalOnSuccess, emitStatus, resolveEtaSeconds } from './queue-helpers.js';
+import type { ActiveTask, ConversionQueueEvents } from './queue-types.js';
 
 export class ConversionQueue {
   private readonly events = new EventEmitter();

@@ -8,7 +8,7 @@ import {
   validateWebmInputPath
 } from '@turner/domain';
 import { createAppError, err, ok, type Result } from '@turner/shared';
-import { validateInputFile } from './queue-helpers';
+import { validateInputFile } from './queue-helpers.js';
 
 type PrepareJobsParams = {
   inputPaths: string[];
